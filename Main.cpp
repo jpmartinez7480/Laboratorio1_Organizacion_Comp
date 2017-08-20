@@ -49,10 +49,12 @@ int main()
 				cin >>  file_mips;
 				if(c.lecturaArchivo_Mips(file_mips) == 1) 
 					cout << "La lectura se realizo satisfactoriamente" << endl;
-				else
+				else{
 					cout << "La lectura de archivo no pudo ser completada. Revise el archivo" << endl;
+					file_mips = "";
+				}
 				cout << "Presione cualquier tecla para continuar...";
-					cin >> pause;
+				cin >> pause;
 				break;
 			case 2:
 				system("cls");
@@ -61,8 +63,10 @@ int main()
 				cin >> file_control;
 				if(c.lecturaArchivo_lineasC(file_control) == 1)
 					cout << "La lectura se realizo satisfactoriamente" << endl;
-				else
+				else{
 					cout << "La lectura de archivo no pudo ser completada. Revise el archivo" << endl;
+					file_control = "";
+				}
 				cout << "Presione cualquier tecla para continuar...";
 				cin >> pause;
 				break;
@@ -73,16 +77,32 @@ int main()
 					cin >> file_salida;	
 					//llamar a la funcion
 				}
-				else if(file_mips == "" && file_control != "")
+				else if(file_mips == "" && file_control != ""){
 					cout << "Falta leer el archivo de sentencias Mips" << endl;
-				else if(file_mips != "" && file_control == "")
+					cout << "Presione una tecla para continuar...";
+					cin >> pause;
+				}
+				else if(file_mips != "" && file_control == ""){
 					cout << "Falta leer el archivo de lineas de control" << endl;
+					cout << "Presione una tecla para continuar...";
+					cin >> pause;
+				}
 				break;
 			case 4:
-				c.mostrarContenido_Mips();
+				if(file_mips != "")
+					c.mostrarContenido_Mips();
+				else{
+					cout << "Falta leer el archivo. Presione una tecla para continuar...";
+					cin >> pause;
+				}
 				break;
 			case 5:
-				c.mostrarContenido_lineasC();
+				if(file_control != "")
+					c.mostrarContenido_lineasC();
+				else{
+					cout << "Falta leer el archivo. Presione una tecla para continuar....";
+					cin >> pause;
+				}
 				break;
 			case 6:
 				cout << "Gracias por su preferencia" << endl;
