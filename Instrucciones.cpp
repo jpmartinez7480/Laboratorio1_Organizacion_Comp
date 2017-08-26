@@ -8,6 +8,10 @@ Instrucciones::Instrucciones()
 	registro3 = "";
 }
 
+void Instrucciones::setOperando(string op){
+	operando = op;
+}
+
 void Instrucciones::setRegistro1(string r){
 	registro1 = r;
 }
@@ -24,6 +28,10 @@ char Instrucciones::getTipo(){
 	return tipo;
 }
 
+string Instrucciones::getOperando(){
+	return operando;
+}
+
 string Instrucciones::getRegistro1(){
 	return registro1;
 }
@@ -37,15 +45,16 @@ string Instrucciones::getRegistro3(){
 }
 
 char Instrucciones::Operacion(string op){
-	//return () ? 'I':'R';
 	if(op == "addi" || op == "subi" || op == "beq" || op == "lw" || op == "sw") return 'I';
 	else if(op == "j") return 'J';
-	else return 'R';
+	else if (op == "add" || op == "sub" || op == "mul" || op =="div") return 'R';
+	else return 'l';
 }
 
-void Instrucciones::establecerInstruccion(string op,string r1,string r2, string r3)
+void Instrucciones::establecerInstruccion(string op, string r1,string r2, string r3)
 {
 	tipo = Operacion(op);
+	setOperando(op);
 	setRegistro1(r1);
 	setRegistro2(r2);
 	setRegistro3(r3);
@@ -54,5 +63,6 @@ void Instrucciones::establecerInstruccion(string op,string r1,string r2, string 
 void Instrucciones::establecerInstruccion(string r1)
 {
 	tipo = 'J';
+	setOperando("j");
 	setRegistro1(r1);
 }

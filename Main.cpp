@@ -47,7 +47,7 @@ int main()
 				cout << "*** Lectura de archivo mips ***" << endl;
 				cout << "Ingrese el nombre del archivo junto a su extension (ejemplo.ext): ";
 				cin >>  file_mips;
-				if(c.lecturaArchivo_Mips(file_mips) == 1) 
+				if(c.readFile_Mips(file_mips) == 1) 
 					cout << "La lectura se realizo satisfactoriamente" << endl;
 				else{
 					cout << "La lectura de archivo no pudo ser completada. Revise el archivo" << endl;
@@ -61,7 +61,7 @@ int main()
 				cout << "*** Lectura de archivo lineas de control ***" << endl;
 				cout << "Ingrese el nombre del archivo junto a su extension (ejemplo.ext): ";
 				cin >> file_control;
-				if(c.lecturaArchivo_lineasC(file_control) == 1)
+				if(c.readFile_lineasC(file_control) == 1)
 					cout << "La lectura se realizo satisfactoriamente" << endl;
 				else{
 					cout << "La lectura de archivo no pudo ser completada. Revise el archivo" << endl;
@@ -75,6 +75,11 @@ int main()
 				if(file_mips != "" & file_control != ""){
 					cout << "Ingrese nombre del archivo de salida junto a su extension: ";
 					cin >> file_salida;	
+					c.initRegisters();
+					c.showContent_Registros();
+					c.compilar();
+					cout << "Presione una tecla para continuar...";
+					cin >> pause;
 					//llamar a la funcion
 				}
 				else if(file_mips == "" && file_control != ""){
@@ -90,7 +95,7 @@ int main()
 				break;
 			case 4:
 				if(file_mips != "")
-					c.mostrarContenido_Mips();
+					c.showContent_Mips();
 				else{
 					cout << "Falta leer el archivo. Presione una tecla para continuar...";
 					cin >> pause;
@@ -98,7 +103,7 @@ int main()
 				break;
 			case 5:
 				if(file_control != "")
-					c.mostrarContenido_lineasC();
+					c.showContent_lineasC();
 				else{
 					cout << "Falta leer el archivo. Presione una tecla para continuar....";
 					cin >> pause;
