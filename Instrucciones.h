@@ -9,11 +9,11 @@ class Instrucciones
 		//~Instrucciones();
 		void establecerInstruccion(string op, string r1,string r2, string r3);
 		void establecerInstruccion(string r1);
-		void establecerInstruccion(int);
 		void setOperando(string);
 		void setRegistro1(string r);
 		void setRegistro2(string r);
 		void setRegistro3(string r);
+		void setTipo(char);
 		char Operacion(string op);
 		char getTipo();
 		string getOperando();

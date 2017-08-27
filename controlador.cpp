@@ -33,6 +33,7 @@ int controlador::readFile_Mips(string nfile)
 			if(line[line.length() - 1] == ':'){
 				Instrucciones i;
 				i.setOperando(linea);
+				i.setTipo('L');
 				inst_mips[cnt] = i;
 				cnt++;
 			}
@@ -239,7 +240,6 @@ void controlador::ejecutarInstruccion(int pos)
 			break;
 		case 'J':
 			j(inst_mips[pos].getRegistro3());
-			showContent_Registros();
 			break;
 	}
 	

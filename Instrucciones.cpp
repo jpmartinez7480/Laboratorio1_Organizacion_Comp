@@ -53,7 +53,7 @@ char Instrucciones::Operacion(string op){
 
 void Instrucciones::establecerInstruccion(string op, string r1,string r2, string r3)
 {
-	tipo = Operacion(op);
+	setTipo(Operacion(op));
 	setOperando(op);
 	setRegistro1(r1);
 	setRegistro2(r2);
@@ -62,7 +62,11 @@ void Instrucciones::establecerInstruccion(string op, string r1,string r2, string
 
 void Instrucciones::establecerInstruccion(string r1)
 {
-	tipo = 'J';
+	setTipo('J');
 	setOperando("j");
 	setRegistro3(r1+":");
+}
+
+void Instrucciones::setTipo(char t){
+	tipo = t;
 }
