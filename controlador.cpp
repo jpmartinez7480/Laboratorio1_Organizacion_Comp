@@ -163,62 +163,86 @@ int controlador::subi(int r1, int n){
 	return r1 - n;
 }
 
-/*bool controlador::lw(string value, int pos, int adress)
-{
-	
+void controlador::lw(string r, int pos){	
+	registros[buscarRegistro(r)].setRegistro(sp[1000-pos/4].getValue());
 }
 
-bool controlador::sw(string value, int pos, int adress)
-{
-
-}*/
+void controlador::sw(string r, int pos){
+	sp[1000-pos/4].setValue(registros[buscarRegistro(r)].getRegistro());
+}
 
 bool controlador::beq(int r1, int r2){
 	return r1 == r2;
 }
 
+void controlador::j(string label)
+{
+	int i = 1;
+	while(inst_mips[i].getOperando()!=label) i++;
+	ejecutarInstruccion(i);
+}
+
 void controlador::compilar()
+{
+	index = 0;
+	for(index; inst_mips[index].getOperando()!=""; index++)
+		ejecutarInstruccion(index);
+}
+
+void controlador::ejecutarInstruccion(int pos)
 {
 	int r1;
 	int r2;
 	int r3;
-	for(int i = 0; i < cnt; i++)
+	switch(inst_mips[pos].getTipo())
 	{
-		switch(inst_mips[i].getTipo())
-		{
-			case 'R':
-				r1 = buscarRegistro(inst_mips[i].getRegistro1());
-				r2 =  registros[buscarRegistro(inst_mips[i].getRegistro2())].getRegistro();
-				r3 = registros[buscarRegistro(inst_mips[i].getRegistro3())].getRegistro();
-				if(inst_mips[i].getOperando() == "add")
-					registros[r1].setRegistro(add(r2,r3));
-				else if(inst_mips[i].getOperando() == "sub")
-					registros[r1].setRegistro(sub(r2,r3));
-				else if(inst_mips[i].getOperando() == "mul")
-					registros[r1].setRegistro(mul(r2,r3));
-				else if(inst_mips[i].getOperando() == "div")
-					registros[r1].setRegistro(div(r2,r3));
-				break;
+		case 'R':
+			r1 = buscarRegistro(inst_mips[pos].getRegistro1());
+			r2 =  registros[buscarRegistro(inst_mips[pos].getRegistro2())].getRegistro();
+			r3 = registros[buscarRegistro(inst_mips[pos].getRegistro3())].getRegistro();
+			if(inst_mips[pos].getOperando() == "add")
+				registros[r1].setRegistro(add(r2,r3));
+			else if(inst_mips[pos].getOperando() == "sub")
+				registros[r1].setRegistro(sub(r2,r3));
+			else if(inst_mips[pos].getOperando() == "mul")
+				registros[r1].setRegistro(mul(r2,r3));
+			else if(inst_mips[pos].getOperando() == "div")
+				registros[r1].setRegistro(div(r2,r3));
+			showContent_Registros();
+			break;
 
-			case 'I':
-				if(inst_mips[i].getOperando() == "addi"){
-					r1 = buscarRegistro(inst_mips[i].getRegistro1());
-					r2 = registros[buscarRegistro(inst_mips[i].getRegistro2())].getRegistro();
-					r3 = atoi(inst_mips[i].getRegistro3().c_str()); //pasar a int
-					registros[r1].setRegistro(addi(r2,r3));
-				}
-				else if(inst_mips[i].getOperando() == "subi"){
-					r1 = buscarRegistro(inst_mips[i].getRegistro1());
-					r2 = registros[buscarRegistro(inst_mips[i].getRegistro2())].getRegistro();
-					r3 = atoi(inst_mips[i].getRegistro3().c_str()); //pasar a int
-					registros[r1].setRegistro(subi(r2,r3));
-				}
-				break;
-			case 'J':
-				break;
-		}
-		mostrarContenido_Registros();
+		case 'I':
+			if(inst_mips[pos].getOperando() == "addi"){
+				r1 = buscarRegistro(inst_mips[pos].getRegistro1());
+				r2 = registros[buscarRegistro(inst_mips[pos].getRegistro2())].getRegistro();
+				r3 = atoi(inst_mips[pos].getRegistro3().c_str()); //pasar a int
+				registros[r1].setRegistro(addi(r2,r3));
+			}
+			else if(inst_mips[pos].getOperando() == "subi"){
+				r1 = buscarRegistro(inst_mips[pos].getRegistro1());
+				r2 = registros[buscarRegistro(inst_mips[pos].getRegistro2())].getRegistro();
+				r3 = atoi(inst_mips[pos].getRegistro3().c_str()); //pasar a int
+				registros[r1].setRegistro(subi(r2,r3));
+			}
+			else if(inst_mips[pos].getOperando() == "lw")
+				lw(inst_mips[pos].getRegistro1(),atoi(inst_mips[pos].getRegistro2().c_str()));
+			else if(inst_mips[pos].getOperando() == "sw")
+				sw(inst_mips[pos].getRegistro1(),atoi(inst_mips[pos].getRegistro2().c_str()));
+			/*else if(inst_mips[pos].getOperando() == "beq"){
+				if(beq(registros[buscarRegistro(inst_mips[pos].getRegistro1())].getRegistro(),registros[buscarRegistro(inst_mips[pos].getRegistro2())].getRegistro())){
+					//ir al label indicado
+					ejecutarInstruccion()
+				} 
+					//j(pos+1);  recuerda que j es tipo J y beq es tipo I
+			}*/
+			showContent_Registros();
+			break;
+		case 'J':
+			j(inst_mips[pos].getRegistro3());
+			showContent_Registros();
+			break;
 	}
+	
 }
 
 

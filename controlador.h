@@ -22,17 +22,19 @@ class controlador
 		int div(int,int);
 		int addi(int,int);
 		int subi(int,int);
-		//bool lw(string,int,int);
-		//bool sw(string,int,int);
+		void lw(string,int);
+		void sw(string,int);
 		bool beq(int,int);
-		//void j(string);
+		void j(string);
 		void compilar();
+		void ejecutarInstruccion(int);
 		static const string regs[32];
 		static const string operaciones[11];
 		//funciones....
 	private:
 		int cnt;
 		int cnt_lineas_control;
+		int index;
 		Instrucciones inst_mips[10000];
 		Control inst_lineas_control[10000];
 		Registro registros[32];

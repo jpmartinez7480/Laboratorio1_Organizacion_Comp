@@ -64,5 +64,5 @@ void Instrucciones::establecerInstruccion(string r1)
 {
 	tipo = 'J';
 	setOperando("j");
-	setRegistro1(r1);
+	setRegistro3(r1+":");
 }

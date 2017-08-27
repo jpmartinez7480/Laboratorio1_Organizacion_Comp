@@ -76,7 +76,6 @@ int main()
 					cout << "Ingrese nombre del archivo de salida junto a su extension: ";
 					cin >> file_salida;	
 					c.initRegisters();
-					c.showContent_Registros();
 					c.compilar();
 					cout << "Presione una tecla para continuar...";
 					cin >> pause;
