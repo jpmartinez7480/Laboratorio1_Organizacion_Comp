@@ -76,10 +76,10 @@ int main()
 					cout << "Ingrese nombre del archivo de salida junto a su extension: ";
 					cin >> file_salida;	
 					c.initRegisters();
+					c.initStackPointer();
 					c.compilar();
 					cout << "Presione una tecla para continuar...";
 					cin >> pause;
-					//llamar a la funcion
 				}
 				else if(file_mips == "" && file_control != ""){
 					cout << "Falta leer el archivo de sentencias Mips" << endl;

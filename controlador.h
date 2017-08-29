@@ -34,7 +34,7 @@ class controlador
 	private:
 		int cnt;
 		int cnt_lineas_control;
-		int index;
+		int PC;
 		Instrucciones inst_mips[10000];
 		Control inst_lineas_control[10000];
 		Registro registros[32];

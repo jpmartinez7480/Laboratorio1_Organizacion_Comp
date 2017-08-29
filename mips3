@@ -1,0 +1,6 @@
+addi $t0,$t0,5
+while:
+beq $t0,$t1,exit
+addi $t1,$t1,1
+j while
+exit:

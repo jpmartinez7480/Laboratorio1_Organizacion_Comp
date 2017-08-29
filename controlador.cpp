@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <cstdlib>
+#include <iomanip>
 #include "controlador.h"
 
 using namespace std;
@@ -27,35 +28,37 @@ int controlador::readFile_Mips(string nfile)
 		{
 			string inst[5];
 			getline(FILE,line);
-			char *cstr = new char[line.length() + 1];
-			strcpy(cstr,line.c_str());
-			linea = strtok(cstr," ");
-			if(line[line.length() - 1] == ':'){
-				Instrucciones i;
-				i.setOperando(linea);
-				i.setTipo('L');
-				inst_mips[cnt] = i;
-				cnt++;
-			}
-			else if(line[line.length()-1]!=':'){
-				while(linea){
-				inst[j] = linea;
-				j++;
-				linea = strtok(NULL,",");
-				}	
-				j = 0;
-				Instrucciones i;
-				if(i.Operacion(inst[0]) == 'R' || i.Operacion(inst[0]) == 'I')
-					i.establecerInstruccion(inst[0],inst[1],inst[2],inst[3]);
-				else if(inst[0] == "j")
-					i.establecerInstruccion(inst[1]);
-				inst_mips[cnt] = i;
-				cnt++;
+			if(line!=""){
+				char *cstr = new char[line.length() + 1];
+				strcpy(cstr,line.c_str());
+				linea = strtok(cstr," ");
+				if(line[line.length() - 1] == ':'){
+					Instrucciones i;
+					i.setOperando(linea);
+					i.setTipo('L');
+					inst_mips[cnt] = i;
+					cnt++;
+				}
+				else if(line[line.length()-1]!=':'){
+					while(linea){
+					inst[j] = linea;
+					j++;
+					linea = strtok(NULL,",");
+					}	
+					j = 0;
+					Instrucciones i;
+					if(i.Operacion(inst[0]) == 'R' || i.Operacion(inst[0]) == 'I')
+						i.establecerInstruccion(inst[0],inst[1],inst[2],inst[3]);
+					else if(inst[0] == "j")
+						i.establecerInstruccion(inst[1]);
+					inst_mips[cnt] = i;
+					cnt++;
+				}
 			}
 		}
+		FILE.close();
 		return 1;
 	}
-	
 }
 
 int controlador::readFile_lineasC(string nfile)
@@ -86,6 +89,7 @@ int controlador::readFile_lineasC(string nfile)
 			inst_lineas_control[cnt_lineas_control] = c;
 			cnt_lineas_control++;
 		}
+		FILE.close();
 		return 1;
 	}
 }
@@ -127,9 +131,10 @@ void controlador::initStackPointer()
 
 void controlador::showContent_Registros()
 {
-	cout << "Registro" << "  " << "valor" << endl;
-	for(int i = 0; i < 32; i++)
-		cout << regs[i] << "        " <<registros[i].getRegistro() << endl;
+	cout << "********** Registros **********"<<endl;
+	cout << "|" <<regs[0] << setw(2) << "|" <<  registros[0].getRegistro() << endl;
+	for(int i = 1; i < 32; i++)
+		cout << "|" <<regs[i] << setw(4) << "|" <<registros[i].getRegistro() << endl;
 }
 
 int controlador::buscarRegistro(string r)
@@ -165,11 +170,11 @@ int controlador::subi(int r1, int n){
 }
 
 void controlador::lw(string r, int pos){	
-	registros[buscarRegistro(r)].setRegistro(sp[1000-pos/4].getValue());
+	registros[buscarRegistro(r)].setRegistro(sp[999-pos/4].getValue());
 }
 
 void controlador::sw(string r, int pos){
-	sp[1000-pos/4].setValue(registros[buscarRegistro(r)].getRegistro());
+	sp[999-pos/4].setValue(registros[buscarRegistro(r)].getRegistro());
 }
 
 bool controlador::beq(int r1, int r2){
@@ -180,14 +185,15 @@ void controlador::j(string label)
 {
 	int i = 1;
 	while(inst_mips[i].getOperando()!=label) i++;
-	ejecutarInstruccion(i);
+	PC = i+1;
+	ejecutarInstruccion(i+1);
 }
 
 void controlador::compilar()
 {
-	index = 0;
-	for(index; inst_mips[index].getOperando()!=""; index++)
-		ejecutarInstruccion(index);
+	PC = 0;
+	for(PC; inst_mips[PC].getOperando()!=""; PC++)
+		ejecutarInstruccion(PC);
 }
 
 void controlador::ejecutarInstruccion(int pos)
@@ -218,25 +224,25 @@ void controlador::ejecutarInstruccion(int pos)
 				r2 = registros[buscarRegistro(inst_mips[pos].getRegistro2())].getRegistro();
 				r3 = atoi(inst_mips[pos].getRegistro3().c_str()); //pasar a int
 				registros[r1].setRegistro(addi(r2,r3));
+				showContent_Registros();
 			}
 			else if(inst_mips[pos].getOperando() == "subi"){
 				r1 = buscarRegistro(inst_mips[pos].getRegistro1());
 				r2 = registros[buscarRegistro(inst_mips[pos].getRegistro2())].getRegistro();
 				r3 = atoi(inst_mips[pos].getRegistro3().c_str()); //pasar a int
 				registros[r1].setRegistro(subi(r2,r3));
+				showContent_Registros();
 			}
-			else if(inst_mips[pos].getOperando() == "lw")
+			else if(inst_mips[pos].getOperando() == "lw"){
 				lw(inst_mips[pos].getRegistro1(),atoi(inst_mips[pos].getRegistro2().c_str()));
-			else if(inst_mips[pos].getOperando() == "sw")
+				showContent_Registros();
+			}
+			else if(inst_mips[pos].getOperando() == "sw"){
+				showContent_Registros();
 				sw(inst_mips[pos].getRegistro1(),atoi(inst_mips[pos].getRegistro2().c_str()));
-			/*else if(inst_mips[pos].getOperando() == "beq"){
-				if(beq(registros[buscarRegistro(inst_mips[pos].getRegistro1())].getRegistro(),registros[buscarRegistro(inst_mips[pos].getRegistro2())].getRegistro())){
-					//ir al label indicado
-					ejecutarInstruccion()
-				} 
-					//j(pos+1);  recuerda que j es tipo J y beq es tipo I
-			}*/
-			showContent_Registros();
+			}
+			else if(inst_mips[pos].getOperando() == "beq" && beq(registros[buscarRegistro(inst_mips[pos].getRegistro1())].getRegistro(),registros[buscarRegistro(inst_mips[pos].getRegistro2())].getRegistro()))
+					j(inst_mips[pos].getRegistro3()+":");
 			break;
 		case 'J':
 			j(inst_mips[pos].getRegistro3());
