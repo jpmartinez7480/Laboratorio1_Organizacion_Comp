@@ -1,22 +1,35 @@
 #include "Control.h"
 
-void Control::setRegDst(bool rd){
+Control::Control()
+{
+	setRegDst('0');
+	setJump('0');
+	setBranch('0');
+	setMemRead('0');
+	setMemToReg('0');
+	setALUOp("00");
+	setMemWrite('0');
+	setALUSrc('0');
+	setRegWrite('0');
+}
+
+void Control::setRegDst(char rd){
 	regDst = rd;
 }
 
-void Control::setJump(bool j){
+void Control::setJump(char j){
 	jump = j;
 }
 
-void Control::setBranch(bool b){
+void Control::setBranch(char b){
 	branch = b;
 }
 
-void Control::setMemRead(bool mr){
+void Control::setMemRead(char mr){
 	memRead = mr;
 }
 
-void Control::setMemToReg(bool mtr){
+void Control::setMemToReg(char mtr){
 	memToReg = mtr;
 }
 
@@ -24,35 +37,35 @@ void Control::setALUOp(string aop){
 	ALUOp = aop;
 }
 
-void Control::setMemWrite(bool mw){
+void Control::setMemWrite(char mw){
 	memWrite = mw;
 }
 
-void Control::setALUSrc(bool as){
+void Control::setALUSrc(char as){
 	ALUSrc = as;
 }
 
-void Control::setRegWrite(bool rw){
+void Control::setRegWrite(char rw){
 	regWrite = rw;
 }
 
-bool Control::getRegDst(){
+char Control::getRegDst(){
 	return regDst;
 }
 
-bool Control::getJump(){
+char Control::getJump(){
 	return jump;
 }
 
-bool Control::getBranch(){
+char Control::getBranch(){
 	return branch;
 }
 
-bool Control::getMemRead(){
+char Control::getMemRead(){
 	return memRead;
 }
 
-bool Control::getMemToReg(){
+char Control::getMemToReg(){
 	return memToReg;
 }
 
@@ -60,19 +73,19 @@ string Control::getALUOp(){
 	return ALUOp;
 }
 
-bool Control::getMemWrite(){
+char Control::getMemWrite(){
 	return memWrite;
 }
 
-bool Control::getALUSrc(){
+char Control::getALUSrc(){
 	return ALUSrc;
 }
 
-bool Control::getRegWrite(){
+char Control::getRegWrite(){
 	return regWrite;
 }
 
-void Control::establecerControl(bool rd, bool j, bool b, bool mr, bool mtr, string aop, bool mw, bool as, bool rw){
+void Control::establecerControl(char rd, char j, char b, char mr, char mtr, string aop, char mw, char as, char rw){
 	setRegDst(rd);
 	setJump(j);
 	setBranch(b);
@@ -82,4 +95,51 @@ void Control::establecerControl(bool rd, bool j, bool b, bool mr, bool mtr, stri
 	setMemWrite(mw);
 	setALUSrc(as);
 	setRegWrite(rw);
+}
+
+void Control::controlSign(char type, string operation)
+{
+	switch(type)
+	{
+		case 'R':
+			setRegDst('1');
+			setRegWrite('1');
+			setALUOp("10");
+			break;
+		case 'I':
+			if(operation == "addi"){
+				setALUSrc('1');
+				setRegWrite('1');
+			}
+			else if(operation == "subi"){
+				setALUOp("01");
+				setALUSrc('1');
+				setRegWrite('1');
+			}
+			else if(operation == "lw"){
+				setMemRead('1');
+				setMemToReg('1');
+				setALUSrc('1');
+				setRegWrite('1');
+			}
+			else if(operation == "sw"){
+				setRegDst('x');
+				setALUSrc('1');
+				setMemToReg('x');
+				setMemWrite('1');
+			}
+			else if(operation == "beq"){
+				setRegDst('x');
+				setBranch('1');
+				setMemToReg('x');
+				setALUOp("01");
+			}
+		break;
+
+		case 'J':
+			setJump('1');
+			setALUSrc('1');
+		break;
+
+	}
 }

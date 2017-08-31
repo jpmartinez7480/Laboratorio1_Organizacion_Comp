@@ -77,7 +77,12 @@ int main()
 					cin >> file_salida;	
 					c.initRegisters();
 					c.initStackPointer();
+					c.initControlSign();
 					c.compilar();
+					c.showContent_Registros();	
+					if(c.exitFile(file_salida))
+						cout << "Archivo creado con exito. Vea la carpeta de origen" << endl;
+					else cout << "Problemas al crear el archivo de salida." << endl;
 					cout << "Presione una tecla para continuar...";
 					cin >> pause;
 				}

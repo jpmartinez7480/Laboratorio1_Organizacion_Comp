@@ -10,6 +10,23 @@ const string controlador::regs[32]  = {"$zero","$at","$v0","$v1","$a0","$a1","$a
 
 const string controlador::operaciones[11] = {"add","sub","mul","div","addi","subi","lw","sw","beq","j"};
 
+bool controlador::exitFile(string nfile)
+{
+	fstream FILE;
+	FILE.open(nfile.c_str(),ios::out);
+	if(FILE){
+		FILE << "Estado" << setw(14) << "RegDst " << setw(6) << "Jump " << setw(6) << "Branch " << setw(7) << "MemRead "<< setw(7) << "MemToReg " << setw(8) << "ALUOp " << setw(6) << "MemWr " << setw(6) << "ALUSrc " << setw(7) << "RegWrite " << endl;
+		for(int i = 0; i < controlSignal; i++){
+			if(searchError(i))
+				FILE << "Error" << setw(12) << lines_control_sign[i].getRegDst() << setw(6) << lines_control_sign[i].getJump() << setw(6) << lines_control_sign[i].getBranch() << setw(9) << lines_control_sign[i].getMemRead() << setw(8) << lines_control_sign[i].getMemToReg() << setw(8) << lines_control_sign[i].getALUOp() << setw(8) << lines_control_sign[i].getMemWrite() << setw(7) << lines_control_sign[i].getALUSrc() << setw(9) << lines_control_sign[i].getRegWrite() << endl;
+			else FILE << "Correcto" << endl;
+		}
+		FILE.close();
+		return 1;
+	}
+	return 0;
+}
+
 int controlador::readFile_Mips(string nfile)
 {
 	cnt = 0;
@@ -65,15 +82,15 @@ int controlador::readFile_lineasC(string nfile)
 {
 	cnt_lineas_control = 0;
 	fstream FILE;
-	bool regDst;
-	bool jump;
-	bool branch;
-	bool memRead;
-	bool memToReg;
+	char regDst;
+	char jump;
+	char branch;
+	char memRead;
+	char memToReg;
 	string ALUOp;
-	bool memWrite;
-	bool ALUSrc;
-	bool regWrite;
+	char memWrite;
+	char ALUSrc;
+	char regWrite;
 	FILE.open(nfile.c_str(),ios::in);
 	if(!FILE){
 		cout << "No se pudo abrir el archivo. Compruebe el nombre del archivo o la existencia de este" << endl;
@@ -129,12 +146,22 @@ void controlador::initStackPointer()
 		sp[i] = stackPointer();
 }
 
+void controlador::initControlSign(){
+	for(int i = 0; i < 1000; i++)
+		lines_control_sign[i] = Control();
+}
+
 void controlador::showContent_Registros()
 {
+	cout << endl;
 	cout << "********** Registros **********"<<endl;
-	cout << "|" <<regs[0] << setw(2) << "|" <<  registros[0].getRegistro() << endl;
-	for(int i = 1; i < 32; i++)
-		cout << "|" <<regs[i] << setw(4) << "|" <<registros[i].getRegistro() << endl;
+	cout << "-------" << "-----" << endl; 
+	cout << "|" <<regs[0] << setw(2) << "| " <<  registros[0].getRegistro() << "  |" <<endl;
+	cout << "-------" << "-----" << endl;
+	for(int i = 1; i < 32; i++){
+		cout << "|" <<regs[i] << setw(4) << "| " <<registros[i].getRegistro() << "  |"<< endl;
+		cout << "-------" << "-----" << endl;
+	}
 }
 
 int controlador::buscarRegistro(string r)
@@ -183,16 +210,19 @@ bool controlador::beq(int r1, int r2){
 
 void controlador::j(string label)
 {
-	int i = 1;
+	int i = 0;
 	while(inst_mips[i].getOperando()!=label) i++;
+	LC = i;
 	PC = i+1;
-	ejecutarInstruccion(i+1);
+	ejecutarInstruccion(PC);
 }
 
 void controlador::compilar()
 {
 	PC = 0;
-	for(PC; inst_mips[PC].getOperando()!=""; PC++)
+	LC = 0;
+	controlSignal = 0;
+	for(PC; inst_mips[PC].getOperando()!=""; PC++,LC++)
 		ejecutarInstruccion(PC);
 }
 
@@ -215,7 +245,9 @@ void controlador::ejecutarInstruccion(int pos)
 				registros[r1].setRegistro(mul(r2,r3));
 			else if(inst_mips[pos].getOperando() == "div")
 				registros[r1].setRegistro(div(r2,r3));
-			showContent_Registros();
+			lines_control_sign[controlSignal].controlSign(inst_mips[pos].getTipo(),inst_mips[pos].getOperando());
+			compareControlSign(controlSignal);
+			controlSignal++;		
 			break;
 
 		case 'I':
@@ -224,33 +256,94 @@ void controlador::ejecutarInstruccion(int pos)
 				r2 = registros[buscarRegistro(inst_mips[pos].getRegistro2())].getRegistro();
 				r3 = atoi(inst_mips[pos].getRegistro3().c_str()); //pasar a int
 				registros[r1].setRegistro(addi(r2,r3));
-				showContent_Registros();
+				lines_control_sign[controlSignal].controlSign(inst_mips[pos].getTipo(),inst_mips[pos].getOperando());
+				compareControlSign(controlSignal);
+				controlSignal++;
 			}
 			else if(inst_mips[pos].getOperando() == "subi"){
 				r1 = buscarRegistro(inst_mips[pos].getRegistro1());
 				r2 = registros[buscarRegistro(inst_mips[pos].getRegistro2())].getRegistro();
 				r3 = atoi(inst_mips[pos].getRegistro3().c_str()); //pasar a int
 				registros[r1].setRegistro(subi(r2,r3));
-				showContent_Registros();
+				lines_control_sign[controlSignal].controlSign(inst_mips[pos].getTipo(),inst_mips[pos].getOperando());
+				compareControlSign(controlSignal);
+				controlSignal++;	
 			}
 			else if(inst_mips[pos].getOperando() == "lw"){
 				lw(inst_mips[pos].getRegistro1(),atoi(inst_mips[pos].getRegistro2().c_str()));
-				showContent_Registros();
+				//showContent_Registros();
+				lines_control_sign[controlSignal].controlSign(inst_mips[pos].getTipo(),inst_mips[pos].getOperando());
+				compareControlSign(controlSignal);
+				controlSignal++;
 			}
 			else if(inst_mips[pos].getOperando() == "sw"){
-				showContent_Registros();
+				//showContent_Registros();
 				sw(inst_mips[pos].getRegistro1(),atoi(inst_mips[pos].getRegistro2().c_str()));
+				lines_control_sign[controlSignal].controlSign(inst_mips[pos].getTipo(),inst_mips[pos].getOperando());
+				compareControlSign(controlSignal);
+				controlSignal++;
 			}
-			else if(inst_mips[pos].getOperando() == "beq" && beq(registros[buscarRegistro(inst_mips[pos].getRegistro1())].getRegistro(),registros[buscarRegistro(inst_mips[pos].getRegistro2())].getRegistro()))
-					j(inst_mips[pos].getRegistro3()+":");
+			else if(inst_mips[pos].getOperando() == "beq" && beq(registros[buscarRegistro(inst_mips[pos].getRegistro1())].getRegistro(),registros[buscarRegistro(inst_mips[pos].getRegistro2())].getRegistro())){
+				lines_control_sign[controlSignal].controlSign(inst_mips[pos].getTipo(),inst_mips[pos].getOperando());
+				compareControlSign(controlSignal);
+				controlSignal++;
+				j(inst_mips[pos].getRegistro3()+":");
+			}	
 			break;
 		case 'J':
 			j(inst_mips[pos].getRegistro3());
+			lines_control_sign[controlSignal].controlSign(inst_mips[pos].getTipo(),inst_mips[pos].getOperando());
+			compareControlSign(controlSignal);
+			controlSignal++;
 			break;
 	}
-	
 }
 
+void controlador::compareControlSign(int pos)
+{
+	if(inst_lineas_control[LC].getRegDst() == lines_control_sign[pos].getRegDst() || lines_control_sign[pos].getRegDst() == 'x')
+		lines_control_sign[pos].setRegDst('-');
+	else lines_control_sign[pos].setRegDst(inst_lineas_control[LC].getRegDst());
+	if(inst_lineas_control[LC].getJump() == lines_control_sign[pos].getJump() || lines_control_sign[pos].getJump() == 'x')
+		lines_control_sign[pos].setJump('-');
+	else lines_control_sign[pos].setJump(inst_lineas_control[LC].getJump());
+	if(inst_lineas_control[LC].getBranch() == lines_control_sign[pos].getBranch() || lines_control_sign[pos].getBranch() == 'x')
+		lines_control_sign[pos].setBranch('-');
+	else lines_control_sign[pos].setBranch(inst_lineas_control[LC].getBranch());
+	if(inst_lineas_control[LC].getMemRead() == lines_control_sign[pos].getMemRead() || lines_control_sign[pos].getMemRead() == 'x')
+		lines_control_sign[pos].setMemRead('-');
+	else lines_control_sign[pos].setMemRead(inst_lineas_control[LC].getMemRead());
+	if(inst_lineas_control[LC].getMemToReg() == lines_control_sign[pos].getMemToReg() || lines_control_sign[pos].getMemToReg() == 'x')
+		lines_control_sign[pos].setMemToReg('-');
+	else lines_control_sign[pos].setMemToReg(inst_lineas_control[LC].getMemToReg());
+	if(inst_lineas_control[LC].getALUOp() == lines_control_sign[pos].getALUOp() || lines_control_sign[pos].getALUOp() == "x")
+		lines_control_sign[pos].setALUOp("-");
+	else lines_control_sign[pos].setALUOp(inst_lineas_control[LC].getALUOp());
+	if(inst_lineas_control[LC].getMemWrite() == lines_control_sign[pos].getMemWrite() || lines_control_sign[pos].getMemWrite() == 'x')
+		lines_control_sign[pos].setMemWrite('-');
+	else lines_control_sign[pos].setMemWrite(inst_lineas_control[LC].getMemWrite());
+	if(inst_lineas_control[LC].getALUSrc() == lines_control_sign[pos].getALUSrc() || lines_control_sign[pos].getALUSrc() == 'x')
+		lines_control_sign[pos].setALUSrc('-');
+	else lines_control_sign[pos].setALUSrc(inst_lineas_control[LC].getALUSrc());
+	if(inst_lineas_control[LC].getRegWrite() == lines_control_sign[pos].getRegWrite() || lines_control_sign[pos].getRegWrite() == 'x')
+		lines_control_sign[pos].setRegWrite('-');
+	else lines_control_sign[pos].setRegWrite(inst_lineas_control[LC].getRegWrite());
 
+}
+
+bool controlador::searchError(int pos)
+{
+	if(lines_control_sign[pos].getRegDst() == '1' || lines_control_sign[pos].getRegDst() == '0' || 
+		lines_control_sign[pos].getJump() == '1' || lines_control_sign[pos].getJump() == '0' ||
+		lines_control_sign[pos].getBranch() == '1' || lines_control_sign[pos].getBranch() == '0' ||
+		lines_control_sign[pos].getMemRead() == '1' || lines_control_sign[pos].getMemRead() == '0' ||
+		lines_control_sign[pos].getMemToReg() == '1' || lines_control_sign[pos].getMemToReg() == '0' ||
+		lines_control_sign[pos].getALUOp() == "00" || lines_control_sign[pos].getALUOp() == "10" || lines_control_sign[pos].getALUOp() == "01" ||
+		lines_control_sign[pos].getMemWrite() == '1' || lines_control_sign[pos].getMemWrite() == '1' ||
+		lines_control_sign[pos].getALUSrc() == '1' || lines_control_sign[pos].getALUSrc() == '0'||
+		lines_control_sign[pos].getRegWrite() == '1' || lines_control_sign[pos].getRegWrite() == '0')
+			return 1;
+	else return 0;
+}
 
 

@@ -15,6 +15,7 @@ class controlador
 		void showContent_Registros();
 		void initRegisters();
 		void initStackPointer();
+		void initControlSign();
 		int buscarRegistro(string r);
 		int add(int,int);
 		int sub(int,int);
@@ -28,15 +29,21 @@ class controlador
 		void j(string);
 		void compilar();
 		void ejecutarInstruccion(int);
+		void compareControlSign(int);
+		bool exitFile(string);
+		bool searchError(int);
 		static const string regs[32];
 		static const string operaciones[11];
 		//funciones....
 	private:
 		int cnt;
 		int cnt_lineas_control;
+		int controlSignal;
 		int PC;
-		Instrucciones inst_mips[10000];
-		Control inst_lineas_control[10000];
+		int LC;
+		Instrucciones inst_mips[1000];
+		Control inst_lineas_control[1000];
+		Control lines_control_sign[1000];
 		Registro registros[32];
 		stackPointer sp[1000];
 };
