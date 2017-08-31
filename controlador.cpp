@@ -222,7 +222,7 @@ void controlador::compilar()
 	PC = 0;
 	LC = 0;
 	controlSignal = 0;
-	for(PC; inst_mips[PC].getOperando()!=""; PC++,LC++)
+	for(PC; inst_mips[PC].getOperando()!=""; PC++)
 		ejecutarInstruccion(PC);
 }
 
@@ -231,6 +231,8 @@ void controlador::ejecutarInstruccion(int pos)
 	int r1;
 	int r2;
 	int r3;
+	//cout << inst_lineas_control[LC].getRegDst() << " " << inst_lineas_control[LC].getJump() << " " << inst_lineas_control[LC].getBranch() << " " << inst_lineas_control[LC].getMemRead() << " " << inst_lineas_control[LC].getMemToReg() << " " << inst_lineas_control[LC].getALUOp() << " "  <<inst_lineas_control[LC].getMemWrite() << " " << inst_lineas_control[LC].getALUSrc() << " " << inst_lineas_control[LC].getRegWrite() << endl;
+	//cout << "LC: " << LC << "" <<inst_mips[pos].getOperando()<< endl;
 	switch(inst_mips[pos].getTipo())
 	{
 		case 'R':
@@ -247,7 +249,8 @@ void controlador::ejecutarInstruccion(int pos)
 				registros[r1].setRegistro(div(r2,r3));
 			lines_control_sign[controlSignal].controlSign(inst_mips[pos].getTipo(),inst_mips[pos].getOperando());
 			compareControlSign(controlSignal);
-			controlSignal++;		
+			controlSignal++;
+			LC++;		
 			break;
 
 		case 'I':
@@ -259,6 +262,7 @@ void controlador::ejecutarInstruccion(int pos)
 				lines_control_sign[controlSignal].controlSign(inst_mips[pos].getTipo(),inst_mips[pos].getOperando());
 				compareControlSign(controlSignal);
 				controlSignal++;
+				LC++;
 			}
 			else if(inst_mips[pos].getOperando() == "subi"){
 				r1 = buscarRegistro(inst_mips[pos].getRegistro1());
@@ -266,8 +270,9 @@ void controlador::ejecutarInstruccion(int pos)
 				r3 = atoi(inst_mips[pos].getRegistro3().c_str()); //pasar a int
 				registros[r1].setRegistro(subi(r2,r3));
 				lines_control_sign[controlSignal].controlSign(inst_mips[pos].getTipo(),inst_mips[pos].getOperando());
-				compareControlSign(controlSignal);
-				controlSignal++;	
+				compareControlSign(controlSignal);	
+				controlSignal++;
+				LC++;
 			}
 			else if(inst_mips[pos].getOperando() == "lw"){
 				lw(inst_mips[pos].getRegistro1(),atoi(inst_mips[pos].getRegistro2().c_str()));
@@ -275,19 +280,27 @@ void controlador::ejecutarInstruccion(int pos)
 				lines_control_sign[controlSignal].controlSign(inst_mips[pos].getTipo(),inst_mips[pos].getOperando());
 				compareControlSign(controlSignal);
 				controlSignal++;
+				LC++;
 			}
 			else if(inst_mips[pos].getOperando() == "sw"){
 				//showContent_Registros();
 				sw(inst_mips[pos].getRegistro1(),atoi(inst_mips[pos].getRegistro2().c_str()));
+				cout << lines_control_sign[controlSignal].getRegDst() << " " << lines_control_sign[controlSignal].getJump() << " " << lines_control_sign[controlSignal].getBranch() << " " << lines_control_sign[controlSignal].getMemRead() << " " << lines_control_sign[controlSignal].getMemToReg() << " " << lines_control_sign[controlSignal].getALUOp() << " "  <<lines_control_sign[controlSignal].getMemWrite() << " " << lines_control_sign[controlSignal].getALUSrc() << " " << lines_control_sign[controlSignal].getRegWrite() << endl;
 				lines_control_sign[controlSignal].controlSign(inst_mips[pos].getTipo(),inst_mips[pos].getOperando());
+				cout << "***" << endl;
+				cout << inst_lineas_control[LC].getRegDst() << " " << inst_lineas_control[LC].getJump() << " " << inst_lineas_control[LC].getBranch() << " " << inst_lineas_control[LC].getMemRead() << " " << inst_lineas_control[LC].getMemToReg() << " " << inst_lineas_control[LC].getALUOp() << " "  <<inst_lineas_control[LC].getMemWrite() << " " << inst_lineas_control[LC].getALUSrc() << " " << inst_lineas_control[LC].getRegWrite() << endl;
 				compareControlSign(controlSignal);
+				cout << lines_control_sign[controlSignal].getRegDst() << " " << lines_control_sign[controlSignal].getJump() << " " << lines_control_sign[controlSignal].getBranch() << " " << lines_control_sign[controlSignal].getMemRead() << " " << lines_control_sign[controlSignal].getMemToReg() << " " << lines_control_sign[controlSignal].getALUOp() << " "  <<lines_control_sign[controlSignal].getMemWrite() << " " << lines_control_sign[controlSignal].getALUSrc() << " " << lines_control_sign[controlSignal].getRegWrite() << endl;
 				controlSignal++;
+				LC++;
 			}
-			else if(inst_mips[pos].getOperando() == "beq" && beq(registros[buscarRegistro(inst_mips[pos].getRegistro1())].getRegistro(),registros[buscarRegistro(inst_mips[pos].getRegistro2())].getRegistro())){
+			else if(inst_mips[pos].getOperando() == "beq"){
 				lines_control_sign[controlSignal].controlSign(inst_mips[pos].getTipo(),inst_mips[pos].getOperando());
 				compareControlSign(controlSignal);
 				controlSignal++;
-				j(inst_mips[pos].getRegistro3()+":");
+				LC++;
+				if(beq(registros[buscarRegistro(inst_mips[pos].getRegistro1())].getRegistro(),registros[buscarRegistro(inst_mips[pos].getRegistro2())].getRegistro()))
+					j(inst_mips[pos].getRegistro3()+":");
 			}	
 			break;
 		case 'J':

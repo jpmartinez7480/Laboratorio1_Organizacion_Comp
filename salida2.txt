@@ -1,0 +1,18 @@
+Estado       RegDst  Jump Branch MemRead MemToReg   ALUOp MemWr ALUSrc RegWrite 
+Correcto
+Error           -     1     -        -       -       -       -      -        -
+Error           0     -     -        -       -      01       -      1        -
+Error           1     -     1        -       1       -       -      0        0
+Error           -     -     1        -       -      01       -      -        -
+Error           1     0     1        -       -      01       -      0        1
+Correcto
+Error           -     -     1        -       -      01       -      -        -
+Error           1     0     1        -       -      01       -      0        1
+Correcto
+Error           -     -     1        -       -      01       -      -        -
+Error           1     0     1        -       -      01       -      0        1
+Correcto
+Error           -     -     1        -       -      01       -      -        -
+Error           1     0     1        -       -      01       -      0        1
+Correcto
+Correcto
