@@ -2,15 +2,27 @@
 #include <fstream>
 #include <cstdlib>
 #include <iomanip>
-#include "controlador.h"
+#include "Procesador.h"
 
 using namespace std;
 
-const string controlador::regs[32]  = {"$zero","$at","$v0","$v1","$a0","$a1","$a2","$a3","$t0","$t1","$t2","$t3","$t4","$t5","$t6","$t7","$s0","$s1","$s2","$s3","$s4","$s5","$s6","$s7","$t8","$t9","$k0","$k1","$gp","$sp","$fp","$ra"};
+const string Procesador::regs[32]  = {"$zero","$at","$v0","$v1","$a0","$a1","$a2","$a3","$t0","$t1","$t2","$t3","$t4","$t5","$t6","$t7","$s0","$s1","$s2","$s3","$s4","$s5","$s6","$s7","$t8","$t9","$k0","$k1","$gp","$sp","$fp","$ra"};
 
-const string controlador::operaciones[11] = {"add","sub","mul","div","addi","subi","lw","sw","beq","j"};
+const string Procesador::operaciones[11] = {"add","sub","mul","div","addi","subi","lw","sw","beq","j"};
 
-bool controlador::exitFile(string nfile)
+Procesador::Procesador()
+{
+	for(int i = 0; i < 32; i++)
+		registros[i] =Registro(); 
+	for(int i = 0; i < 1000; i++)
+		stackPointer[i] = Registro();
+	for(int i = 0; i < 1000; i++)
+		lines_control_sign[i] = Control();
+}
+
+Procesador::~Procesador(){}
+
+bool Procesador::exitFile(string nfile)
 {
 	fstream FILE;
 	FILE.open(nfile.c_str(),ios::out);
@@ -27,7 +39,7 @@ bool controlador::exitFile(string nfile)
 	return 0;
 }
 
-int controlador::readFile_Mips(string nfile)
+int Procesador::readFile_Mips(string nfile)
 {
 	cnt = 0;
 	fstream FILE;
@@ -50,25 +62,20 @@ int controlador::readFile_Mips(string nfile)
 				strcpy(cstr,line.c_str());
 				linea = strtok(cstr," ");
 				if(line[line.length() - 1] == ':'){
-					Instrucciones i;
-					i.setOperando(linea);
-					i.setTipo('L');
-					inst_mips[cnt] = i;
+					inst_mips[cnt].setOperando(linea);
+					inst_mips[cnt].setTipo('L');
 					cnt++;
 				}
 				else if(line[line.length()-1]!=':'){
 					while(linea){
 					inst[j] = linea;
 					j++;
-					linea = strtok(NULL,",");
+					linea = strtok(NULL,", ");
 					}	
 					j = 0;
-					Instrucciones i;
-					if(i.Operacion(inst[0]) == 'R' || i.Operacion(inst[0]) == 'I')
-						i.establecerInstruccion(inst[0],inst[1],inst[2],inst[3]);
-					else if(inst[0] == "j")
-						i.establecerInstruccion(inst[1]);
-					inst_mips[cnt] = i;
+					if(inst[0] != "j")
+						inst_mips[cnt].establecerInstruccion(inst[0],inst[1],inst[2],inst[3]);
+					else inst_mips[cnt].establecerInstruccion(inst[1]);
 					cnt++;
 				}
 			}
@@ -78,7 +85,7 @@ int controlador::readFile_Mips(string nfile)
 	}
 }
 
-int controlador::readFile_lineasC(string nfile)
+int Procesador::readFile_lineasC(string nfile)
 {
 	cnt_lineas_control = 0;
 	fstream FILE;
@@ -101,9 +108,7 @@ int controlador::readFile_lineasC(string nfile)
 		string linea;
 		getline(FILE,linea);
 		while(FILE >> regDst >> jump >> branch >> memRead >> memToReg >> ALUOp >> memWrite >> ALUSrc >> regWrite){
-			Control c;
-			c.establecerControl(regDst,jump,branch,memRead,memToReg, ALUOp,memWrite, ALUSrc, regWrite);
-			inst_lineas_control[cnt_lineas_control] = c;
+			inst_lineas_control[cnt_lineas_control].establecerControl(regDst,jump,branch,memRead,memToReg, ALUOp,memWrite, ALUSrc, regWrite);
 			cnt_lineas_control++;
 		}
 		FILE.close();
@@ -111,47 +116,7 @@ int controlador::readFile_lineasC(string nfile)
 	}
 }
 
-void controlador::showContent_Mips()
-{
-	string pause;
-	for(int i = 0; i < cnt; i++)
-	{
-		if(inst_mips[i].getTipo()!='l')
-			cout << "tipo: " << inst_mips[i].getTipo() << " " << "instruccion: " <<inst_mips[i].getOperando() << " " << inst_mips[i].getRegistro1() << " " << inst_mips[i].getRegistro2() << " " << inst_mips[i].getRegistro3() << endl;
-		else
-			cout << "Label " << inst_mips[i].getOperando() << endl;
-	}
-	cout << "Presione cualquier tecla para continuar...";
-	cin >> pause;
-}
-
-void controlador::showContent_lineasC()
-{
-	string pause;
-	for(int i = 0; i < cnt_lineas_control; i++)
-		cout << inst_lineas_control[i].getRegDst() << " " << inst_lineas_control[i].getJump() << " " << inst_lineas_control[i].getBranch() << " " << inst_lineas_control[i].getMemRead() << " " << inst_lineas_control[i].getMemToReg() << " " << inst_lineas_control[i].getALUOp() << " " <<inst_lineas_control[i].getMemWrite() << " " << inst_lineas_control[i].getALUSrc() << " " << inst_lineas_control[i].getRegWrite() << endl;
-	cout << "Presione cualquier tecla para continuar...";
-	cin >> pause; 
-}
-
-void controlador::initRegisters()
-{
-	for(int i = 0; i < 32; i++)
-		registros[i] =Registro();   
-}
-
-void controlador::initStackPointer()
-{
-	for(int i = 0; i < 1000; i++)
-		sp[i] = stackPointer();
-}
-
-void controlador::initControlSign(){
-	for(int i = 0; i < 1000; i++)
-		lines_control_sign[i] = Control();
-}
-
-void controlador::showContent_Registros()
+void Procesador::showContent_Registros()
 {
 	cout << endl;
 	cout << "********** Registros **********"<<endl;
@@ -164,7 +129,7 @@ void controlador::showContent_Registros()
 	}
 }
 
-int controlador::buscarRegistro(string r)
+int Procesador::buscarRegistro(string r)
 {
 	int cnt = 0;
 	while(regs[cnt] != r)
@@ -172,43 +137,43 @@ int controlador::buscarRegistro(string r)
 	return cnt;
 }
 
-int controlador::add(int r1,int r2){
+int Procesador::add(int r1,int r2){
 	return r1+r2;
 }
 
-int controlador::sub(int r1,int r2){
+int Procesador::sub(int r1,int r2){
 	return r1-r2;
 }
 
-int controlador::mul(int r1, int r2){
+int Procesador::mul(int r1, int r2){
 	return r1*r2;
 }
 
-int controlador::div(int r1, int r2){
+int Procesador::div(int r1, int r2){
 	return r1/r2;
 }
 
-int controlador::addi(int r1,int n){
+int Procesador::addi(int r1,int n){
 	return r1 + n;
 }
 
-int controlador::subi(int r1, int n){
+int Procesador::subi(int r1, int n){
 	return r1 - n;
 }
 
-void controlador::lw(string r, int pos){	
-	registros[buscarRegistro(r)].setRegistro(sp[999-pos/4].getValue());
+void Procesador::lw(string r, int pos){	
+	registros[buscarRegistro(r)].setRegistro(stackPointer[999-pos/4].getRegistro());
 }
 
-void controlador::sw(string r, int pos){
-	sp[999-pos/4].setValue(registros[buscarRegistro(r)].getRegistro());
+void Procesador::sw(string r, int pos){
+	stackPointer[999-pos/4].setRegistro(registros[buscarRegistro(r)].getRegistro());
 }
 
-bool controlador::beq(int r1, int r2){
+bool Procesador::beq(int r1, int r2){
 	return r1 == r2;
 }
 
-void controlador::j(string label)
+void Procesador::j(string label)
 {
 	int i = 0;
 	while(inst_mips[i].getOperando()!=label) i++;
@@ -217,7 +182,7 @@ void controlador::j(string label)
 	ejecutarInstruccion(PC);
 }
 
-void controlador::compilar()
+void Procesador::compilar()
 {
 	PC = 0;
 	LC = 0;
@@ -226,7 +191,7 @@ void controlador::compilar()
 		ejecutarInstruccion(PC);
 }
 
-void controlador::ejecutarInstruccion(int pos)
+void Procesador::ejecutarInstruccion(int pos)
 {
 	int r1;
 	int r2;
@@ -276,21 +241,15 @@ void controlador::ejecutarInstruccion(int pos)
 			}
 			else if(inst_mips[pos].getOperando() == "lw"){
 				lw(inst_mips[pos].getRegistro1(),atoi(inst_mips[pos].getRegistro2().c_str()));
-				//showContent_Registros();
 				lines_control_sign[controlSignal].controlSign(inst_mips[pos].getTipo(),inst_mips[pos].getOperando());
 				compareControlSign(controlSignal);
 				controlSignal++;
 				LC++;
 			}
 			else if(inst_mips[pos].getOperando() == "sw"){
-				//showContent_Registros();
 				sw(inst_mips[pos].getRegistro1(),atoi(inst_mips[pos].getRegistro2().c_str()));
-				cout << lines_control_sign[controlSignal].getRegDst() << " " << lines_control_sign[controlSignal].getJump() << " " << lines_control_sign[controlSignal].getBranch() << " " << lines_control_sign[controlSignal].getMemRead() << " " << lines_control_sign[controlSignal].getMemToReg() << " " << lines_control_sign[controlSignal].getALUOp() << " "  <<lines_control_sign[controlSignal].getMemWrite() << " " << lines_control_sign[controlSignal].getALUSrc() << " " << lines_control_sign[controlSignal].getRegWrite() << endl;
 				lines_control_sign[controlSignal].controlSign(inst_mips[pos].getTipo(),inst_mips[pos].getOperando());
-				cout << "***" << endl;
-				cout << inst_lineas_control[LC].getRegDst() << " " << inst_lineas_control[LC].getJump() << " " << inst_lineas_control[LC].getBranch() << " " << inst_lineas_control[LC].getMemRead() << " " << inst_lineas_control[LC].getMemToReg() << " " << inst_lineas_control[LC].getALUOp() << " "  <<inst_lineas_control[LC].getMemWrite() << " " << inst_lineas_control[LC].getALUSrc() << " " << inst_lineas_control[LC].getRegWrite() << endl;
 				compareControlSign(controlSignal);
-				cout << lines_control_sign[controlSignal].getRegDst() << " " << lines_control_sign[controlSignal].getJump() << " " << lines_control_sign[controlSignal].getBranch() << " " << lines_control_sign[controlSignal].getMemRead() << " " << lines_control_sign[controlSignal].getMemToReg() << " " << lines_control_sign[controlSignal].getALUOp() << " "  <<lines_control_sign[controlSignal].getMemWrite() << " " << lines_control_sign[controlSignal].getALUSrc() << " " << lines_control_sign[controlSignal].getRegWrite() << endl;
 				controlSignal++;
 				LC++;
 			}
@@ -312,7 +271,7 @@ void controlador::ejecutarInstruccion(int pos)
 	}
 }
 
-void controlador::compareControlSign(int pos)
+void Procesador::compareControlSign(int pos)
 {
 	if(inst_lineas_control[LC].getRegDst() == lines_control_sign[pos].getRegDst() || lines_control_sign[pos].getRegDst() == 'x')
 		lines_control_sign[pos].setRegDst('-');
@@ -344,17 +303,13 @@ void controlador::compareControlSign(int pos)
 
 }
 
-bool controlador::searchError(int pos)
+bool Procesador::searchError(int pos)
 {
-	if(lines_control_sign[pos].getRegDst() == '1' || lines_control_sign[pos].getRegDst() == '0' || 
-		lines_control_sign[pos].getJump() == '1' || lines_control_sign[pos].getJump() == '0' ||
-		lines_control_sign[pos].getBranch() == '1' || lines_control_sign[pos].getBranch() == '0' ||
-		lines_control_sign[pos].getMemRead() == '1' || lines_control_sign[pos].getMemRead() == '0' ||
-		lines_control_sign[pos].getMemToReg() == '1' || lines_control_sign[pos].getMemToReg() == '0' ||
-		lines_control_sign[pos].getALUOp() == "00" || lines_control_sign[pos].getALUOp() == "10" || lines_control_sign[pos].getALUOp() == "01" ||
-		lines_control_sign[pos].getMemWrite() == '1' || lines_control_sign[pos].getMemWrite() == '1' ||
-		lines_control_sign[pos].getALUSrc() == '1' || lines_control_sign[pos].getALUSrc() == '0'||
-		lines_control_sign[pos].getRegWrite() == '1' || lines_control_sign[pos].getRegWrite() == '0')
+	if(lines_control_sign[pos].getRegDst() != '-' || lines_control_sign[pos].getJump() != '-' ||
+		lines_control_sign[pos].getBranch() != '-' || lines_control_sign[pos].getMemRead() != '-' || 
+		lines_control_sign[pos].getMemToReg() != '-' || lines_control_sign[pos].getALUOp() != "-" ||
+		lines_control_sign[pos].getMemWrite() != '-' || lines_control_sign[pos].getALUSrc() != '-' ||
+		lines_control_sign[pos].getRegWrite() != '-') 
 			return 1;
 	else return 0;
 }

@@ -3,7 +3,6 @@ using std::string;
 
 class Control
 {
-	//~Control();
 	public:
 		Control();
 		void setRegDst(char rd);

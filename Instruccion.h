@@ -2,10 +2,10 @@
 
 using std::string;
 
-class Instrucciones
+class Instruccion
 {
 	public:
-		Instrucciones();
+		Instruccion();
 		//~Instrucciones();
 		void establecerInstruccion(string op, string r1,string r2, string r3);
 		void establecerInstruccion(string r1);
